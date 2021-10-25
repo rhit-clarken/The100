@@ -10,3 +10,13 @@ body {
 .page-container {
     margin-top: 75px;
 }
+
+body > nav ul {
+    list-style-type: none;
+    padding-top: 1em;
+}
+
+body > nav ul li{
+    display: inline-block;
+    padding-right: 1em;
+}
