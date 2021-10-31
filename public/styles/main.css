@@ -3,7 +3,7 @@ body {
 }
 
 .navbar {
-    background-color: #800000;
+    background-color: black;
     color: white;
 }
 
@@ -19,4 +19,51 @@ body > nav ul {
 body > nav ul li{
     display: inline-block;
     padding-right: 1em;
+}
+
+/*CSS for any page*/
+/*Link color change when hovering*/
+a {
+    color: white;
+    text-decoration-color: white;
+}
+a:hover {
+    color: #3400FF;
+}
+
+
+/*CSS for login page*/
+#indexBody {
+    background: black;
+}
+.bodyIntroAnimation {
+    /*animation*/
+    animation-name: indexBodyChangeColors;
+    animation-duration: 4s;
+}
+@keyframes indexBodyChangeColors {
+    from {background: linear-gradient(#3400FF, #A200FF) fixed;}
+    to {background: black;}
+}
+
+#loginThe100 {
+    color: white;
+    font-size: 2.5vw;
+    /*Centering "The 100" text*/
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+.textIntroAnimation {
+    /*animation*/
+    animation-name: indexThe100ChangeColors;
+    animation-duration: 8s;
+    animation-delay: 0s;
+}
+@keyframes indexThe100ChangeColors {
+    from {color: black;}
+    to {color: white;}
 }

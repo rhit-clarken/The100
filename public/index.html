@@ -10,18 +10,23 @@
   <title>The 100</title>
 </head>
 
-<body>
-  <nav class="navbar navbar-dark fixed-top">
-    <a class="navbar-brand" href="#">The 100</a>
-    <ul>
-      <li><a href="index.html">Home</a></li>
-      <li><a href="data.html">Data</a></li>
-      <li><a href="profile.html">Profile</a></li>
-      <li><a href="settings.html">Settings</a></li>
-    </ul>
-  </nav>
-  <div id="mainPage" class="container page-container">
 
+<!--Do we need the navbar in the login page at all?-->
+<nav class="navbar navbar-dark fixed-top">
+  <a class="navbar-brand" href="#">The 100</a>
+  <ul>
+    <!--Links to the other pages of the application-->
+    <!--Should "index.html" be "home.html" for the "Home" page?-->
+    <li><a href="index.html">Home</a></li>
+    <li><a href="data.html">Data</a></li>
+    <li><a href="profile.html">Profile</a></li>
+    <li><a href="settings.html">Settings</a></li>
+  </ul>
+</nav>
+<!--id "indexBody" and class "bodyIntroAnimation" for CSS-->
+<body id="indexBody" class="bodyIntroAnimation">
+  <div id="mainPage" class="container page-container">
+    <div id="loginThe100" class="textIntroAnimation">The 100</div>
 
   </div>
   <script src="scripts/jquery.min.js"></script>
