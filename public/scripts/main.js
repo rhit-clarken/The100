@@ -29,7 +29,7 @@ rhit.ClassName = class {
 
 rhit.LoginPageController = class {
 	constructor() {
-
+		document.querySelector("#rosefireButton").disabled = true;
 		document.querySelector("#indexBody").onclick = (event) => {
 			document.querySelector("#indexBody").classList.add("bodyIntroAnimation");
 			document.querySelector("#loginThe100").classList.add("textIntroAnimation")
@@ -37,6 +37,7 @@ rhit.LoginPageController = class {
 			// document.querySelector("#rosefireButton").style.display = "block";
 			document.querySelector("#firebaseui-auth-container").style.opacity = "1";
 			document.querySelector("#rosefireButton").style.opacity = "1";
+			document.querySelector("#rosefireButton").disabled = false;
 		}
 
 		// document.querySelector("#rosefireButton").onclick = (event) => {

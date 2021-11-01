@@ -35,6 +35,8 @@ a:hover {
 /*CSS for login page*/
 #indexBody {
     background: linear-gradient(#3400FF, #A200FF) fixed;
+    /*Makes the body take up the whole page*/
+    min-height: 100vh;
 }
 .bodyIntroAnimation {
     /*animation*/
