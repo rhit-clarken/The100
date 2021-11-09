@@ -29,12 +29,21 @@ rhit.ClassName = class {
 	}
 }
 
+
+
 rhit.HomePageController = class {
 	constructor() {
 		document.querySelector("#signOutButton").addEventListener("click", (event) => {
 			rhit.fbAuthManager.signOut();
 		});
+		document.querySelector("#submitSong").addEventListener("click", (event)=> {
+			const ranking = document.querySelector("#inputRanking").value;
+			const rating = document.querySelector("#inputRating").value;
+			console.log("Ranking: "+ ranking + " Rating: "+ rating);
+		});
 	}
+
+	
 }
 
 rhit.LoginPageController = class {
@@ -161,15 +170,14 @@ rhit.startFirebaseUI = function() {
 	var uiConfig = {
 		signInSuccessUrl: '/home.html',
 		signInOptions: [
-		  firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-		  firebase.auth.EmailAuthProvider.PROVIDER_ID,
-		  firebase.auth.PhoneAuthProvider.PROVIDER_ID,
-		  firebaseui.auth.AnonymousAuthProvider.PROVIDER_ID
+			firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+			firebase.auth.EmailAuthProvider.PROVIDER_ID,
+			firebase.auth.PhoneAuthProvider.PROVIDER_ID,
+			firebaseui.auth.AnonymousAuthProvider.PROVIDER_ID
 		],
-	  };
-
-	  const ui = new firebaseui.auth.AuthUI(firebase.auth());
-	  ui.start('#firebaseui-auth-container', uiConfig);
+	};
+	const ui = new firebaseui.auth.AuthUI(firebase.auth());
+	ui.start('#firebaseui-auth-container', uiConfig);
 }
 
 /* Main */

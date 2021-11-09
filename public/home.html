@@ -11,29 +11,53 @@
 </head>
 
 
-<!--Do we need the navbar in the login page at all?-->
-<nav class="navbar navbar-dark fixed-top">
-  <a class="navbar-brand" href="#">The 100</a>
-  <ul>
-    <!--Links to the other pages of the application-->
-    <!--Should "index.html" be "home.html" for the "Home" page?-->
-    <li><a href="home.html">Home</a></li>
-    <li><a href="data.html">Data</a></li>
-    <li><a href="profile.html">Profile</a></li>
-    <li><a href="settings.html">Settings</a></li>
-  </ul>
-</nav>
-<!--id "indexBody" and class "bodyIntroAnimation" for CSS-->
-<body id="homeBody">
+<body id='homeBody'>
+  <nav class="navbar navbar-dark fixed-top">
+    <a class="navbar-brand" href="#">The 100</a>
+    <ul>
+      <li><a href="home.html">Home</a></li>
+      <li><a href="data.html">Data</a></li>
+      <li><a href="profile.html">Profile</a></li>
+      <li><a href="settings.html">Settings</a></li>
+      <li id="signOutButton">Sign Out</a></li>
+  
+    </ul>
+  </nav>
   <div id="homePage" class="container page-container">
+    <div></div>
+    <div></div>
+    <div id="songAndTitle">
+      <!-- <p id="songTitle">"Starboy" by The Weekend</p> -->
+      <iframe id="player" type="text/html" width="640" height="390"
+        src="https://www.youtube.com/embed/34Na4j8AVgA?autoplay=1" frameborder="0"
+        enablejsapi="true"></iframe>
+    </div>
+    <div id="ratingForm">
+      <p id="songTitle">"Starboy" by The Weekend</p>
+      <form>
+        <div class="form-group">
+          <label id="rankingLabel" for="inputRanking">Ranking</label>
+          <input class="form-control" id="inputRanking" placeholder="">
+          <small id="rankingHelp" class="form-text">What ranking (out of 100) do you think this song is?</small>
+        </div>
+        <div class="form-group">
+          <label id="ratingLabel" for="inputRating">Rating</label>
+          <input class="form-control" id="inputRating" placeholder="">
+          <small id="ratingHelp" class="form-text">What is your personal rating of the song?</small>
+        </div>
+        <button id="submitSong" type="button" class="btn">Submit</button>
+        <button id="newSong" type="button" class="btn">New Song</button>
+      </form>
+    </div>
 
-    <button id="signOutButton">Sign Out</button>
 
   </div>
   <script src="scripts/jquery.min.js"></script>
   <script src="scripts/popper.js"></script>
   <script src="scripts/bootstrap-material-design.js"></script>
-  <script>$("body").bootstrapMaterialDesign();</script>
+  <script>
+    $("body").bootstrapMaterialDesign();
+  </script>
   <script src="/__/firebase/7.18.0/firebase-app.js"></script>
   <script src="/__/firebase/7.18.0/firebase-analytics.js"></script>
   <script src="/__/firebase/7.18.0/firebase-auth.js"></script>
