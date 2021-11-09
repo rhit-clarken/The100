@@ -5,6 +5,7 @@ body {
 .navbar {
     background-color: black;
     color: white;
+    border-bottom: 2px solid #A200FF;
 }
 
 .page-container {
@@ -96,4 +97,41 @@ a:hover {
 @keyframes indexThe100ChangeColors {
     from {color: black;}
     to {color: white;}
+}
+
+#homeBody{
+    background: black;
+    color: white;
+}
+
+#homePage{
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: .25fr 1fr;
+}
+
+#ratingForm{
+    background: #A200FF;
+    margin: 1em;
+    padding: 1rem;
+}
+
+#songAndTitle{
+    margin: 1em;
+}
+
+#rankingLabel, #ratingLabel, #submitSong, #newSong{
+    color: white;
+}
+
+@media (max-width: 990px) {
+    #homePage{
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr;
+    }
+}
+
+input, textarea{
+    background-color:#666;
+    color: #FFF;
 }
