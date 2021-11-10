@@ -131,7 +131,6 @@ a:hover {
     }
 }
 
-input, textarea{
-    background-color:#666;
-    color: #FFF;
+.selected {
+    color: yellow;
 }

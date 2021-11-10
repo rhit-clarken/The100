@@ -1,0 +1,11 @@
+data = [{title: "Shape of You", artist:"Ed Sheeran", key: "JGwWNGJdvx8"},
+{title: "Blinding Lights", artist: "The Weeknd", key: "4NRXx6U8ABQ"},
+{title: "Dance Monkey", artist: "Tones and I", key: "q0hyYWKXF0Q"},
+{title: "Rockstar", artist: "Post Malone featuring 21 Savage", key: "UceaB4D0jpo"},
+{title: "One Dance", artist: "Drake featuring Wizkid and Kyla", key: "iAbnEUA0wpA"},
+{title: "Closer", artist: "The Chainsmokers featuring Halsey", key: "PT2_F-1esPk"},
+{title: "Someone You Loved", artist: "Lewis Capaldi", key: "bCuhuePlP8o"},
+{title: "Sunflower", artist: "Post Malone and Swae Lee", key: "ApXoWvfEYVU"},
+{title: "Señorita", artist: "Shawn Mendes and Camila Cabello", key: "Pkh8UtuejGw"},
+{title: "Bad Guy", artist: "Billie Eilish", key: "DyDfgMOUjCI"},
+{title: "Starboy", artist: "The Weeknd featuring Daft Punk", key: "34Na4j8AVgA"},];
