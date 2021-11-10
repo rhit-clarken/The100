@@ -22,11 +22,23 @@ rhit.fbSongManager = null;
 rhit.fbSingleSongManager = null;
 rhit.fbAuthManager = null;
 
+//From: https://stackoverflow.com/questions/494143/creating-a-new-dom-element-from-an-html-string-using-built-in-dom-methods-or-pro/35385518#35385518
+function htmlToElement(html) {
+    var template = document.createElement('template');
+    html = html.trim(); // Never return a text node of whitespace as the result
+    template.innerHTML = html;
+    return template.content.firstChild;
+}
+
 rhit.Song = class {
-	constructor(id, url, caption) {
+	constructor(id, key, artist, title, ranking, rating, global) {
 		this.id = id;
-		this.url = url;
-		this.caption = caption;
+		this.key = key;
+		this.artist = artist;
+		this.title = title;
+		this.ranking = ranking;
+		this.rating = rating;
+		this.global = global;
 	}
 }
 
@@ -73,23 +85,27 @@ rhit.FbSongsManager = class {
 	stopListening() {
 		this._unsubscribe();
 	}
-	// get length() {
-	// 	return this._documentSnapshots.length;
-	// }
-	// getPictureAtIndex(index) {
-	// 	const docSnapshot = this._documentSnapshots[index];
-	// 	const pic = new rhit.Picture(
-	// 		docSnapshot.id,
-	// 		docSnapshot.get(rhit.FB_KEY_URL),
-	// 		docSnapshot.get(rhit.FB_KEY_CAPTION)
-	// 	);
-	// 	return pic;
-	// }
+	get length() {
+		return this._documentSnapshots.length;
+	}
+	getSongAtIndex(index) {
+		const docSnapshot = this._documentSnapshots[index];
+		const pic = new rhit.Song(
+			docSnapshot.id,
+			docSnapshot.get(rhit.FB_KEY_YTKEY),
+			docSnapshot.get(rhit.FB_KEY_ARTIST),
+			docSnapshot.get(rhit.FB_KEY_TITLE),
+			docSnapshot.get(rhit.FB_KEY_USER_RANKING),
+			docSnapshot.get(rhit.FB_KEY_USER_RATING),
+			docSnapshot.get(rhit.FB_KEY_GLOBAL_RANKING)
+		);
+		return pic;
+	}
 }
 
 rhit.HomePageController = class {
 	constructor() {
-		this._randSong = Math.floor(Math.random()*11);
+		this._randSong = Math.floor(Math.random() * 11);
 		this._tempRating = 4;
 		document.querySelector("#signOutButton").addEventListener("click", (event) => {
 			rhit.fbAuthManager.signOut();
@@ -102,26 +118,26 @@ rhit.HomePageController = class {
 			} else {
 				var rating = 0;
 				document.querySelector("#rankingWarning").innerHTML = "";
-				document.querySelectorAll(".star").forEach(star=>{
-					if(star.classList.contains("selected")){
+				document.querySelectorAll(".star").forEach(star => {
+					if (star.classList.contains("selected")) {
 						star.classList.toggle("selected");
-						rating ++;
+						rating++;
 					}
 				})
 				console.log("Ranking: " + ranking);
-				rhit.fbSongManager.add(data[this._randSong].key, data[this._randSong].artist, data[this._randSong].title, ranking, rating, this._randSong+1);
+				rhit.fbSongManager.add(data[this._randSong].key, data[this._randSong].artist, data[this._randSong].title, ranking, rating, this._randSong + 1);
 				(document.querySelector("#inputRanking")).value = "";
 				document.querySelector("#guessTitle").innerHTML = `${data[this._randSong].title} by ${data[this._randSong].artist}`
 				document.querySelector("#guessResult").innerHTML = `Your Guess: ${ranking}\nTrue Ranking: ${this._randSong}`
 				console.log(rhit.fbSongManager);
 			}
 		});
-		document.querySelector("#newSong").addEventListener("click", (event)=>{
-			this._randSong = Math.floor(Math.random()*11);
+		document.querySelector("#newSong").addEventListener("click", (event) => {
+			this._randSong = Math.floor(Math.random() * 11);
 			this.updateView();
 		});
-		document.querySelectorAll(".star").forEach(star=>{
-			star.addEventListener("click", (event)=>{
+		document.querySelectorAll(".star").forEach(star => {
+			star.addEventListener("click", (event) => {
 				star.classList.toggle("selected");
 			})
 		})
@@ -140,6 +156,192 @@ rhit.HomePageController = class {
 		// 	document.querySelector("#menuEdit").style.display = "flex";
 		// 	document.querySelector("#menuDelete").style.display = "flex";
 		// }
+	}
+}
+
+rhit.DataPageController = class {
+	constructor() {
+		this.showUserData = true;
+
+		document.querySelector("#userData").addEventListener("click", (event)=>{
+			if(document.querySelector("#globalData").classList.contains("currentData")){
+				document.querySelector("#globalData").classList.toggle("currentData");
+				document.querySelector("#userData").classList.toggle("currentData");
+			}
+			this.showUserData = true;
+			this.updateList();
+
+		});
+		document.querySelector("#globalData").addEventListener("click", (event)=>{
+			if(document.querySelector("#userData").classList.contains("currentData")){
+				document.querySelector("#userData").classList.toggle("currentData");
+				document.querySelector("#globalData").classList.toggle("currentData");
+			}
+			this.showUserData = false;
+			this.updateList();
+
+		});
+		rhit.fbSongManager.beginListening(this.updateList.bind(this));
+
+	}
+
+
+	updateList() {
+		console.log(this.showUserData);
+		const newList = htmlToElement('<div id="songListContainer"></div>');
+		if(this.showUserData == true){
+			for (let i = 0; i < rhit.fbSongManager.length; i++) {
+				const song = rhit.fbSongManager.getSongAtIndex(i);
+				const newCard = this._createCard(song);
+				newCard.onclick = (event) => {
+					window.location.href = `/song.html?id=${song.id}`;
+				};
+				newList.appendChild(newCard);
+			}
+		} else{
+			for(let i = 0; i< data.length; i++){
+				const song = data[i];
+				const newCard = this._createGlobalCard(song, i+1);
+				newCard.onclick = (event) => {
+					window.location.href = `/song.html?id=${song.key}`;
+				};
+				newList.appendChild(newCard);
+			}
+		}
+
+		const oldList = document.querySelector("#songListContainer");
+		oldList.removeAttribute("id");
+		oldList.hidden = true;
+
+		oldList.parentElement.appendChild(newList);
+	}
+
+	_createCard(song) {
+		return htmlToElement(`
+			<div class="card" id="card">
+        	<div class="card-body">
+          	<h5 class="card-text">${song.title} by ${song.artist}</h5>
+          	<h6 class="card-subtitle mb-2">Your Ranking: ${song.ranking}</h6>
+			<h6 class="card-subtitle mb-2">True Ranking: ${song.global}</h6>
+			<h6 class="card-subtitle mb-2">Your Rating: ${song.rating}</h6>
+        	</div>
+      		</div>
+				`);
+	}
+
+	_createGlobalCard(song, ranking) {
+		return htmlToElement(`
+			<div class="card" id="card">
+        	<div class="card-body">
+          	<h5 class="card-text">${song.title} by ${song.artist}</h5>
+			<h6 class="card-subtitle mb-2">True Ranking: ${ranking}</h6>
+        	</div>
+      		</div>
+				`);
+	}
+}
+
+rhit.FbSingleSongManager = class {
+	constructor(songId) {
+	  this._documentSnapshot = {};
+	  this._unsubscribe = null;
+	  this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_SONGS).doc(songId);
+	  console.log(`Listening to ${this._ref.path}`);
+	}
+	beginListening(changeListener) {
+		this._unsubscribe =this._ref.onSnapshot((doc) => {
+			if(doc.exists){
+				console.log("Document data:", doc.data());
+				this._documentSnapshot = doc;
+				changeListener();
+			} else {
+				console.log("No such document!");
+			}
+		});
+	}
+	stopListening() {
+	  this._unsubscribe();
+	}
+	update(ranking, rating) {
+		this._ref.update({
+			[rhit.FB_KEY_USER_RANKING]: ranking,
+			[rhit.FB_KEY_USER_RATING]: rating,
+			[rhit.FB_KEY_LAST_TOUCHED]: firebase.firestore.Timestamp.now()
+		})
+		.then(() => {
+			console.log("Document successfully updated!");
+		})
+		.catch(function (error) {
+			console.eroor("Error adding document: ", error);
+		});
+	}
+	delete() {
+		return this._ref.delete();
+	}
+
+	get key() {
+		return this._documentSnapshot.get(rhit.FB_KEY_YTKEY);
+	}
+	get title() {
+		return this._documentSnapshot.get(rhit.FB_KEY_TITLE);
+	}
+	get artist() {
+		return this._documentSnapshot.get(rhit.FB_KEY_ARTIST);
+	}
+	get global() {
+		return this._documentSnapshot.get(rhit.FB_KEY_GLOBAL_RANKING);
+	}
+	get ranking() {
+		return this._documentSnapshot.get(rhit.FB_KEY_USER_RANKING);
+	}
+	get rating() {
+		return this._documentSnapshot.get(rhit.FB_KEY_USER_RATING);
+	}
+ }
+
+rhit.DetailPageController = class {
+	constructor() {
+
+		// document.querySelector("#menuSignOut").addEventListener("click", (event) => {
+		// 	rhit.fbAuthManager.signOut();
+		// });
+
+		// document.querySelector("#submitEditCaption").addEventListener("click", (event) => {
+		// 	const caption = document.querySelector("#inputCaption").value;
+		// 	rhit.fbSinglePictureManager.update(caption);
+
+		// });
+
+		// $("#editPhotoCaption").on("show.bs.modal", (event) => {
+		// 	//Pre animation
+		// 	document.querySelector("#inputCaption").value = rhit.fbSinglePictureManager.caption;
+		// });
+		// $("#editPhotoCaption").on("shown.bs.modal", (event) => {
+		// 	//Post animation
+		// 	document.querySelector("#inputCaption").focus();
+		// });
+
+		// document.querySelector("#submitDeletePic").addEventListener("click", (event) => {
+		// 	rhit.fbSinglePictureManager.delete().then(()=> {
+		// 		console.log("Document successfully deleted!");
+		// 		window.location.href = "/";
+		// 	}).catch((error)=>{
+		// 		console.error("Error removing document: ", error);
+		// 	});
+
+		// });
+
+		rhit.fbSingleSongManager.beginListening(this.updateView.bind(this));
+	}
+	updateView() {
+		const cardURL = document.querySelector("#player");
+		cardURL.setAttribute("src", `https://www.youtube.com/embed/${rhit.fbSingleSongManager.key}?autoplay=1`);
+		document.querySelector("#cardCaption").innerHTML = `${rhit.fbSingleSongManager.title} by ${rhit.fbSingleSongManager.artist}`;
+		document.querySelector()
+		if(rhit.fbSingleSongManager.author == rhit.fbAuthManager.uid){
+			document.querySelector("#menuEdit").style.display="flex";
+			document.querySelector("#menuDelete").style.display="flex";
+		}
 	}
 }
 
@@ -235,6 +437,9 @@ rhit.initializePage = function () {
 
 	if (document.querySelector("#dataPage")) {
 		console.log("You are on the data page.");
+		const uid = urlParams.get("uid");
+		rhit.fbSongManager = new rhit.FbSongsManager(uid);
+		new rhit.DataPageController();
 		// const picId = urlParams.get("id");
 		// if (!picId) {
 		// 	window.location.href = "/";
@@ -242,6 +447,13 @@ rhit.initializePage = function () {
 		// rhit.fbSinglePictureManager = new rhit.FbSinglePictureManager(picId);
 		// new rhit.DetailPageController();
 
+	}
+
+	if (document.querySelector("#detailPage")) {
+		console.log("You are on the profile page.");
+		const uid = urlParams.get("id");
+		rhit.fbSingleSongManager = new rhit.FbSingleSongManager(uid);
+		new rhit.DetailPageController();
 	}
 
 	if (document.querySelector("#profilePage")) {
