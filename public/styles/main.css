@@ -135,6 +135,24 @@ a:hover {
     color: yellow;
 }
 
+#search-label {
+    color:white;
+}
+
+#dataSearchBoxContainer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+#dataSearchBox #searchInput {
+    border: 2px solid #A200FF;
+}
+
+#dataSearchIcon {
+    color: #A200FF;
+    font-size: 1.5em;
+}
+
 #dataBody, #songBody{
     background: black;
 }
