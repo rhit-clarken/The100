@@ -1,11 +1,30 @@
+:root {
+    /* --vertical-space: 2rem;
+    --horizontal-space: 3rem;
+
+    --light-color:242, 242, 242;
+    --body-color: 27, 67, 50;
+    --heading-color: #141C26;
+    --contrast-color: #73534C;
+    --bg-color: #BFBFBF; */
+    --opacity: 1;
+    --neon-color: rgba(162, 0, 255, var(--opacity));
+    --background-mode:black;
+    --text-mode: white;
+}
+
 body {
     background: #DDDDDD;
 }
 
 .navbar {
-    background-color: black;
-    color: white;
-    border-bottom: 2px solid #A200FF;
+    background-color: var(--background-mode);
+    color: var(--text-mode);
+    border-bottom: 2px solid var(--neon-color);
+}
+
+.navbar .navbar-brand{
+    color: var(--text-mode);
 }
 
 .page-container {
@@ -25,8 +44,8 @@ body > nav ul li{
 /*CSS for any page*/
 /*Link color change when hovering*/
 a {
-    color: white;
-    text-decoration-color: white;
+    color: var(--text-mode);
+    text-decoration-color: var(--text-mode);
 }
 a:hover {
     color: #3400FF;
@@ -111,7 +130,7 @@ a:hover {
 }
 
 #ratingForm{
-    background: #A200FF;
+    background: var(--neon-color);
     margin: 1em;
     padding: 1rem;
 }
@@ -135,18 +154,18 @@ a:hover {
     color: yellow;
 }
 
-#dataBody, #songBody{
-    background: black;
+#dataBody, #songBody, #globalSongBody, #profileBody{
+    background: var(--background-mode);
 }
 
 #card{
     background: transparent;
     color: white;
-    border: 2px solid #A200FF;
+    border: 2px solid var(--neon-color);
 }
 
 #card:hover {
-    background: #A200FF;
+    background: var(--neon-color);
 }
 
 #dataSettings ul {
@@ -164,11 +183,53 @@ a:hover {
     background: gray;
 }
 
-#songPage .card {
-    background:#A200FF;
+#songPage .card, #globalSongPage .card {
+    background:var(--neon-color);
     color: white;
+}
+
+#songPage h6, #globalSongPage h6{
+    margin-top: .5em;
 }
 
 #songBody #menuEdit, #songBody #menuDelete, #songBody #dropdownMenuButton {
     display: none;
 }
+
+.dropdown-menu-right {
+    left: -128px;
+}
+
+#globalSongBody .dropdown-menu-right{
+    left: -150px;
+}
+
+img{
+    width:100%;
+    max-width:200px;
+}
+
+#userInfoContainer{
+    display: grid;
+    grid-template-columns: auto auto;
+}
+
+#userInfo{
+    background: var(--neon-color);
+    color: white;
+    margin: 1rem;
+    margin-top: 6rem;
+    padding: 1em;
+}
+
+#userSettings{
+    background: var(--neon-color);
+    color: white;
+    padding: 1em;
+    margin: 1rem;
+}
+
+/* .background-neon{
+    background:rgba(162, 0, 255, 0.5);
+    /* opacity: 1; */
+/* } */

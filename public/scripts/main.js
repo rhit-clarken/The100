@@ -18,8 +18,15 @@ rhit.FB_KEY_AUTHOR = "Author";
 rhit.FB_KEY_USER_RANKING = "userRanking";
 rhit.FB_KEY_USER_RATING = "userRating";
 rhit.FB_KEY_GLOBAL_RANKING = "globalRanking";
+rhit.FB_COLLECTION_USERS = "Users";
+rhit.FB_KEY_USERSONGS = "userSongs";
+rhit.FB_KEY_ISDARKMODE = "isDarkMode";
+rhit.FB_KEY_OPACITY = "Opacity";
+rhit.FB_KEY_USER_CREATED = "userCreatedTime"
 rhit.fbSongManager = null;
 rhit.fbSingleSongManager = null;
+rhit.fbUserManager = null;
+rhit.fbSingleUserManager = null;
 rhit.fbAuthManager = null;
 
 //From: https://stackoverflow.com/questions/494143/creating-a-new-dom-element-from-an-html-string-using-built-in-dom-methods-or-pro/35385518#35385518
@@ -162,6 +169,10 @@ rhit.HomePageController = class {
 rhit.DataPageController = class {
 	constructor() {
 		this.showUserData = true;
+
+		document.querySelector("#signOutButton").addEventListener("click", (event) => {
+			rhit.fbAuthManager.signOut();
+		});
 
 		document.querySelector("#userData").addEventListener("click", (event)=>{
 			if(document.querySelector("#globalData").classList.contains("currentData")){
@@ -343,6 +354,7 @@ rhit.DetailPageController = class {
 			//Post animation
 			document.querySelector("#inputRanking").focus();
 		});
+		
 
 		document.querySelector("#submitDeleteSong").addEventListener("click", (event) => {
 			rhit.fbSingleSongManager.delete().then(()=> {
@@ -411,8 +423,198 @@ rhit.GlobalDetailPageController = class {
 		const player = document.querySelector("#player");
 		player.setAttribute("src", `https://www.youtube.com/embed/${data[this._index].key}?autoplay=1`);
 		document.querySelector("#cardTitle").innerHTML = `${data[this._index].title} by ${data[this._index].artist}`;
+		document.querySelector("#cardData").innerHTML = `True Ranking: ${this._index+1}`
 	}
 }
+
+rhit.ProfilePageController = class {
+	constructor() {
+		const user = firebase.auth().currentUser;
+		if (user !== null) {
+			// The user object has basic properties such as display name, email, etc.
+			this.displayName = user.displayName;
+			this.email = user.email;
+			this.photoURL = user.photoURL;
+		}
+		document.querySelector("#submitEditUser").addEventListener("click", (event)=>{
+			user.updateProfile({
+				displayName: document.querySelector("#inputName").value,
+				photoURL: document.querySelector("#inputImage").value
+			  }).then(() => {
+				// Update successful
+				// ...
+			  }).catch((error) => {
+				// An error occurred
+				// ...
+			  }); 
+		});
+		$("#editUserDialog").on("show.bs.modal", (event) => {
+			//Pre animation
+			document.querySelector("#inputName").value = this.displayName;
+			document.querySelector("#inputImage").value = this.photoURL;
+		});
+		$("#editUserDialog").on("shown.bs.modal", (event) => {
+			//Post animation
+			document.querySelector("#inputName").focus();
+		});
+
+		const slider = document.getElementById("opacityRange");
+		const root = document.documentElement;
+		slider.oninput = function() {
+			console.log(slider.value*.01);
+			root.style.setProperty('--opacity', slider.value*.01);
+		}
+
+		document.querySelector("#darkModeButton").addEventListener("click", (event)=>{
+			console.log("darkmode button pressed");
+			let currentMode = window.getComputedStyle(document.documentElement).getPropertyValue('--background-mode');
+			if(currentMode == 'black'){
+				root.style.setProperty('--background-mode', "#DDDDDD");
+				root.style.setProperty('--text-mode', "black");
+			} else{
+				root.style.setProperty('--background-mode', "black");
+				root.style.setProperty('--text-mode', "white");
+			}
+		});
+		
+		this.updateView();
+	}
+
+	updateView() {
+		document.querySelector("#userInformation").innerHTML = `Name: ${this.displayName}<br>Email: ${this.email}`;
+		if(this.photoURL!=undefined){
+			document.querySelector("#userImage").setAttribute("src", this.photoURL);
+			document.querySelector("#unsplashInfo").innerHTML = "";
+		}
+
+	}
+}
+
+rhit.FbUsersManager = class {
+
+	constructor(uid) {
+		this._uid = uid;
+		this._documentSnapshots = [];
+		this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_USERS);
+		this._unsubscribe = null;
+	}
+
+	add() {
+
+		firebase.firestore().collection(rhit.FB_COLLECTION_USERS).doc(rhit.fbAuthManager.uid).set({
+			[rhit.FB_KEY_ISDARKMODE]: true,
+			[rhit.FB_KEY_OPACITY]: 1,
+			[rhit.FB_KEY_USER_CREATED]: firebase.firestore.Timestamp.now(), 
+			[rhit.FB_KEY_USERSONGS]: ["UserSongs"]
+		}).then(()=>{
+			console.log("Document successfully written!");
+		})
+			.catch(function (error) {
+				console.log("Error adding document: ", error);
+			});
+
+	}
+
+	beginListening(changeListener) {
+		let query = this._ref.orderBy(rhit.FB_KEY_USER_CREATED, "desc").limit(50);
+		// if (this._uid) {
+		// 	query = query.where(rhit.FB_KEY_AUTHOR, "==", this._uid);
+		// }
+		this._unsubscribe = query.onSnapshot((querySnapshot) => {
+			this._documentSnapshots = querySnapshot.docs;
+			changeListener();
+		})
+	}
+	stopListening() {
+		this._unsubscribe();
+	}
+	get length() {
+		return this._documentSnapshots.length;
+	}
+	// getSongAtIndex(index) {
+	// 	const docSnapshot = this._documentSnapshots[index];
+	// 	const pic = new rhit.Song(
+	// 		docSnapshot.id,
+	// 		docSnapshot.get(rhit.FB_KEY_YTKEY),
+	// 		docSnapshot.get(rhit.FB_KEY_ARTIST),
+	// 		docSnapshot.get(rhit.FB_KEY_TITLE),
+	// 		docSnapshot.get(rhit.FB_KEY_USER_RANKING),
+	// 		docSnapshot.get(rhit.FB_KEY_USER_RATING),
+	// 		docSnapshot.get(rhit.FB_KEY_GLOBAL_RANKING)
+	// 	);
+	// 	return pic;
+	// }
+}
+
+rhit.FbSingleUserManager = class {
+	constructor(userId) {
+	  this._documentSnapshot = {};
+	  this._unsubscribe = null;
+	  this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_USERS).doc(userId);
+	  console.log(`Listening to ${this._ref.path}`);
+	}
+	beginListening(changeListener) {
+		this._unsubscribe =this._ref.onSnapshot((doc) => {
+			if(doc.exists){
+				console.log("Document data:", doc.data());
+				this._documentSnapshot = doc;
+				changeListener();
+			} else {
+				console.log("No such document!");
+			}
+		});
+	}
+	stopListening() {
+	  this._unsubscribe();
+	}
+	updateSongs(key) {
+		this._ref.update({
+			[rhit.FB_KEY_USERSONGS]: firebase.firestore.FieldValue.arrayUnion(key)
+		})
+		.then(() => {
+			console.log("Document successfully updated!");
+		})
+		.catch(function (error) {
+			console.eroor("Error adding document: ", error);
+		});
+	}
+	updateSettings(isDarkMode, opacity) {
+		this._ref.update({
+			[rhit.FB_KEY_ISDARKMODE]: isDarkMode,
+			[rhit.FB_KEY_OPACITY]: opacity
+		})
+		.then(() => {
+			console.log("Document successfully updated!");
+		})
+		.catch(function (error) {
+			console.eroor("Error adding document: ", error);
+		});
+	}
+	deleteUser() {
+		return this._ref.delete();
+	}
+	deleteSong() {
+		this._ref.update({
+			[rhit.FB_KEY_USERSONGS]: firebase.firestore.FieldValue.arrayRemove(key)
+		})
+		.then(() => {
+			console.log("Document successfully updated!");
+		})
+		.catch(function (error) {
+			console.eroor("Error adding document: ", error);
+		});
+	}
+
+	get userSongs() {
+		return this._documentSnapshot.get(rhit.FB_KEY_USERSONGS);
+	}
+	get isDarkMode() {
+		return this._documentSnapshot.get(rhit.FB_KEY_ISDARKMODE);
+	}
+	get opacity() {
+		return this._documentSnapshot.get(rhit.FB_KEY_OPACITY);
+	}
+ }
 
 rhit.LoginPageController = class {
 	constructor() {
@@ -464,7 +666,6 @@ rhit.FbAuthManager = class {
 			});
 		});
 
-
 	}
 	signOut() {
 		firebase.auth().signOut().catch((error) => {
@@ -498,6 +699,12 @@ rhit.initializePage = function () {
 	if (document.querySelector("#homePage")) {
 		console.log("You are on the home page.");
 		const uid = urlParams.get("uid");
+		// firebase.firestore().collection(rhit.FB_COLLECTION_USERS).doc(rhit.FbAuthManager.uid).get().then((data)=>{
+		// 	if(data.exists){
+		// 		console.log(data);
+		// 	}
+		// })
+		// rhit.fbUserManager.add();
 		rhit.fbSongManager = new rhit.FbSongsManager(uid);
 		new rhit.HomePageController();
 		// new rhit.ListPageController();
@@ -521,7 +728,7 @@ rhit.initializePage = function () {
 	if (document.querySelector("#songPage")) {
 		console.log("You are on the song page.");
 		const uid = urlParams.get("id");
-		rhit.fbSingleSongManager = new rhit.FbSingleSongManager(uid);
+		rhit.fbSongManager = new rhit.FbSingleSongManager(uid);
 		new rhit.DetailPageController();
 	}
 
@@ -534,6 +741,7 @@ rhit.initializePage = function () {
 
 	if (document.querySelector("#profilePage")) {
 		console.log("You are on the profile page.");
+		new rhit.ProfilePageController;
 
 	}
 
@@ -570,6 +778,7 @@ rhit.startFirebaseUI = function () {
 rhit.main = function () {
 	console.log("Ready");
 	rhit.fbAuthManager = new rhit.FbAuthManager();
+	rhit.fbUserManager = new rhit.FbUsersManager();
 	rhit.fbAuthManager.beginListening(() => {
 		console.log("authchange callback fired.")
 		console.log("isSignedIn = ", rhit.fbAuthManager.isSignedIn);

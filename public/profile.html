@@ -18,13 +18,62 @@
       <li><a href="data.html">Data</a></li>
       <li><a href="profile.html">Profile</a></li>
       <li><a href="settings.html">Settings</a></li>
+      <li id="signOutButton">Sign Out</a></li>
     </ul>
   </nav>
 
-<body>
+<body id="profileBody">
   <div id="profilePage" class="container page-container">
+    <div id="userInfo">
+      <h2>User Information</h2>
+      <div id="userInfoContainer">
+        <div id="userImageBlock">
+          <img src="images/c-d-x-PDX_a_82obo-unsplash.jpg" alt="userProfileImage" id="userImage">
+          <p id="unsplashInfo">Photo by <a href="https://unsplash.com/@cdx2?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">C D-X</a> on <a href="https://unsplash.com/s/photos/music?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a></p>
+        </div>
+        <div id="userText">
+          <p id="userInformation"></p>
+          <button id="editUserButon" class="btn" type="button" data-toggle="modal"data-target="#editUserDialog">Edit User Information</button>
+        </div>
+      </div>
+    </div>
+    <div id="userSettings">
+      <h2>Settings</h2>
+      <button id="darkModeButton" class="btn" type="button"><span class="material-icons">flashlight_on</span>Dark Mode</button>
+      <br>
+      <label for="opacityRange">Neon Opacity</label>
+      <input type="range" class="custom-range" min="20" id="opacityRange">
+    </div>
 
+  </div>
 
+  <div class="modal fade" id="editUserDialog" tabindex="-1" role="dialog" aria-labelledby="Edit User" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit User Information</h5>
+        </div>
+        <div class="modal-body">
+          
+          <form>
+            <div class="form-group bmd-form-group">
+              <label for="inputName">Name</label>
+              <input type="text" class="form-control" id="inputName" placeholder="">
+            </div>
+            <div class="form-group bmd-form-group">
+              <label for="inputImage">Image</label>
+              <input type="text" class="form-control" id="inputImage" placeholder="">
+            </div>
+            <small class="form-text">You must refresh page to see changes!</small>
+          </form>
+  
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">CANCEL</button>
+          <button id="submitEditUser" type="button" class="btn btn-primary" data-dismiss="modal">UPDATE</button>
+        </div>
+      </div>
+    </div>
   </div>
   <script src="scripts/jquery.min.js"></script>
   <script src="scripts/popper.js"></script>
