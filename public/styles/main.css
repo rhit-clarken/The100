@@ -135,7 +135,7 @@ a:hover {
     color: yellow;
 }
 
-#dataBody{
+#dataBody, #songBody{
     background: black;
 }
 
@@ -162,4 +162,13 @@ a:hover {
 }
 #dataSettings ul li:hover, #dataSettings ul .currentData{
     background: gray;
+}
+
+#songPage .card {
+    background:#A200FF;
+    color: white;
+}
+
+#songBody #menuEdit, #songBody #menuDelete, #songBody #dropdownMenuButton {
+    display: none;
 }

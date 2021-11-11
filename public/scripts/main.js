@@ -203,7 +203,7 @@ rhit.DataPageController = class {
 				const song = data[i];
 				const newCard = this._createGlobalCard(song, i+1);
 				newCard.onclick = (event) => {
-					window.location.href = `/song.html?id=${song.key}`;
+					window.location.href = `/globalsong.html?id=${i}`;
 				};
 				newList.appendChild(newCard);
 			}
@@ -223,7 +223,7 @@ rhit.DataPageController = class {
           	<h5 class="card-text">${song.title} by ${song.artist}</h5>
           	<h6 class="card-subtitle mb-2">Your Ranking: ${song.ranking}</h6>
 			<h6 class="card-subtitle mb-2">True Ranking: ${song.global}</h6>
-			<h6 class="card-subtitle mb-2">Your Rating: ${song.rating}</h6>
+			<h6 class="card-subtitle mb-2">User's Rating: ${song.rating}</h6>
         	</div>
       		</div>
 				`);
@@ -297,51 +297,120 @@ rhit.FbSingleSongManager = class {
 	get rating() {
 		return this._documentSnapshot.get(rhit.FB_KEY_USER_RATING);
 	}
+	get author() {
+		return this._documentSnapshot.get(rhit.FB_KEY_AUTHOR);
+	}
  }
 
 rhit.DetailPageController = class {
 	constructor() {
 
-		// document.querySelector("#menuSignOut").addEventListener("click", (event) => {
-		// 	rhit.fbAuthManager.signOut();
-		// });
+		document.querySelector("#submitEditSong").addEventListener("click", (event) => {
+			const ranking = document.querySelector("#inputRanking").value;
+			if (ranking < 0 || ranking > 100) {
+				document.querySelector("#rankingWarning").innerHTML = "Ranking not between 0 and 100!";
+			} else {
+				var rating = 0;
+				document.querySelector("#rankingWarning").innerHTML = "";
+				document.querySelectorAll(".star").forEach(star => {
+					if (star.classList.contains("selected")) {
+						star.classList.toggle("selected");
+						console.log("star hit");
+						rating++;
+					}
+				})
+			rhit.fbSingleSongManager.update(ranking, rating);
+			}
+		});
+		document.querySelectorAll(".star").forEach(star => {
+			star.addEventListener("click", (event) => {
+				star.classList.toggle("selected");
+			})
+		});
 
-		// document.querySelector("#submitEditCaption").addEventListener("click", (event) => {
-		// 	const caption = document.querySelector("#inputCaption").value;
-		// 	rhit.fbSinglePictureManager.update(caption);
+		$("#editSongDialog").on("show.bs.modal", (event) => {
+			//Pre animation
+			document.querySelector("#inputRanking").value = rhit.fbSingleSongManager.ranking;
+			var rating = rhit.fbSingleSongManager.rating;
+			document.querySelectorAll(".star").forEach(star => {
+				if (rating > 0) {
+					star.classList.toggle("selected");
+					rating--;
+				}
+			})
+		});
+		$("#editSongDialog").on("shown.bs.modal", (event) => {
+			//Post animation
+			document.querySelector("#inputRanking").focus();
+		});
 
-		// });
+		document.querySelector("#submitDeleteSong").addEventListener("click", (event) => {
+			rhit.fbSingleSongManager.delete().then(()=> {
+				console.log("Document successfully deleted!");
+				window.location.href = "data.html";
+			}).catch((error)=>{
+				console.error("Error removing document: ", error);
+			});
 
-		// $("#editPhotoCaption").on("show.bs.modal", (event) => {
-		// 	//Pre animation
-		// 	document.querySelector("#inputCaption").value = rhit.fbSinglePictureManager.caption;
-		// });
-		// $("#editPhotoCaption").on("shown.bs.modal", (event) => {
-		// 	//Post animation
-		// 	document.querySelector("#inputCaption").focus();
-		// });
-
-		// document.querySelector("#submitDeletePic").addEventListener("click", (event) => {
-		// 	rhit.fbSinglePictureManager.delete().then(()=> {
-		// 		console.log("Document successfully deleted!");
-		// 		window.location.href = "/";
-		// 	}).catch((error)=>{
-		// 		console.error("Error removing document: ", error);
-		// 	});
-
-		// });
+		});
 
 		rhit.fbSingleSongManager.beginListening(this.updateView.bind(this));
 	}
 	updateView() {
-		const cardURL = document.querySelector("#player");
-		cardURL.setAttribute("src", `https://www.youtube.com/embed/${rhit.fbSingleSongManager.key}?autoplay=1`);
-		document.querySelector("#cardCaption").innerHTML = `${rhit.fbSingleSongManager.title} by ${rhit.fbSingleSongManager.artist}`;
-		document.querySelector()
+		const player = document.querySelector("#player");
+		player.setAttribute("src", `https://www.youtube.com/embed/${rhit.fbSingleSongManager.key}?autoplay=1`);
+		document.querySelector("#cardTitle").innerHTML = `${rhit.fbSingleSongManager.title} by ${rhit.fbSingleSongManager.artist}`;
+		document.querySelector("#cardData").innerHTML = `Your Ranking: ${rhit.fbSingleSongManager.ranking}<br>True Ranking: ${rhit.fbSingleSongManager.global}<br>Your Rating: ${rhit.fbSingleSongManager.rating}<br>Author: ${rhit.fbSingleSongManager.author}`
 		if(rhit.fbSingleSongManager.author == rhit.fbAuthManager.uid){
+			document.querySelector("#dropdownMenuButton").style.display="flex";
 			document.querySelector("#menuEdit").style.display="flex";
 			document.querySelector("#menuDelete").style.display="flex";
 		}
+	}
+}
+
+rhit.GlobalDetailPageController = class {
+	constructor(index) {
+		this._index = index;
+
+		document.querySelector("#submitAddSong").addEventListener("click", (event) => {
+			const ranking = document.querySelector("#inputRanking").value;
+			if (ranking < 0 || ranking > 100) {
+				document.querySelector("#rankingWarning").innerHTML = "Ranking not between 0 and 100!";
+			} else {
+				var rating = 0;
+				document.querySelector("#rankingWarning").innerHTML = "";
+				document.querySelectorAll(".star").forEach(star => {
+					if (star.classList.contains("selected")) {
+						star.classList.toggle("selected");
+						console.log("star hit");
+						rating++;
+					}
+				})
+				rhit.fbSongManager.add(data[index].key, data[index].artist, data[index].title, ranking, rating, index + 1);
+			}
+		});
+		document.querySelectorAll(".star").forEach(star => {
+			star.addEventListener("click", (event) => {
+				star.classList.toggle("selected");
+			})
+		});
+
+		$("#addSongDialog").on("show.bs.modal", (event) => {
+			//Pre animation
+			document.querySelector("#inputRanking").value = index;
+		});
+		$("#editSongDialog").on("shown.bs.modal", (event) => {
+			//Post animation
+			document.querySelector("#inputRanking").focus();
+		});
+
+		rhit.fbSongManager.beginListening(this.updateView.bind(this));
+	}
+	updateView() {
+		const player = document.querySelector("#player");
+		player.setAttribute("src", `https://www.youtube.com/embed/${data[this._index].key}?autoplay=1`);
+		document.querySelector("#cardTitle").innerHTML = `${data[this._index].title} by ${data[this._index].artist}`;
 	}
 }
 
@@ -449,11 +518,18 @@ rhit.initializePage = function () {
 
 	}
 
-	if (document.querySelector("#detailPage")) {
-		console.log("You are on the profile page.");
+	if (document.querySelector("#songPage")) {
+		console.log("You are on the song page.");
 		const uid = urlParams.get("id");
 		rhit.fbSingleSongManager = new rhit.FbSingleSongManager(uid);
 		new rhit.DetailPageController();
+	}
+
+	if (document.querySelector("#globalSongPage")) {
+		console.log("You are on the global song page.");
+		const uid = urlParams.get("id");
+		rhit.fbSongManager = new rhit.FbSongsManager;
+		new rhit.GlobalDetailPageController(uid);
 	}
 
 	if (document.querySelector("#profilePage")) {
