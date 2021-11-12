@@ -48,13 +48,30 @@
           <span class="material-icons star" id="star5" data-selected="0">star</span>
           <small id="rankingHelp" class="form-text">What is your personal rating of this song?</small>
         </div>
-        <button id="submitSong" type="button" class="btn">Submit</button>
+        <button id="submitSong" type="button" class="btn" data-toggle="modal" data-target="#guessDialog">Submit</button>
         <button id="newSong" type="button" class="btn">New Song</button>
       </form>
+      <div id="dataWarning"></div>
     </div>
     <!-- Maybe put in modal to make it stand out more!!!! -->
-    <div id="guessTitle"></div>
-    <div id="guessResult"></div>
+    
+    <div class="modal fade" id="guessDialog" tabindex="-1" role="dialog" aria-labelledby="Guess Dialog" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="resultsTitle">The Results</h5>
+          </div>
+          <div class="modal-body">
+            <div id="guessTitle"></div>
+            <div id="guessResult"></div>
+          </div>
+          <!-- <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">CANCEL</button>
+            <button id="submitAddSong" type="button" class="btn btn-primary" data-dismiss="modal">ADD</button>
+          </div> -->
+        </div>
+      </div>
+    </div>
 
 
   </div>

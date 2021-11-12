@@ -115,35 +115,44 @@ rhit.FbSongsManager = class {
 
 rhit.HomePageController = class {
 	constructor() {
-		this._randSong = Math.floor(Math.random() * 11);
+		this._randSong = Math.floor(Math.random() * 100);
 		this._tempRating = 4;
+		var userSongs = [];
 		document.querySelector("#signOutButton").addEventListener("click", (event) => {
 			rhit.fbAuthManager.signOut();
 		});
 		document.querySelector("#submitSong").addEventListener("click", (event) => {
-			// const movie = document.querySelector("#inputRanking").value;
-			const ranking = (document.querySelector("#inputRanking")).value;
-			if (ranking < 0 || ranking > 100) {
-				document.querySelector("#rankingWarning").innerHTML = "Ranking not between 0 and 100!";
-			} else {
-				var rating = 0;
-				document.querySelector("#rankingWarning").innerHTML = "";
-				document.querySelectorAll(".star").forEach(star => {
-					if (star.classList.contains("selected")) {
-						star.classList.toggle("selected");
-						rating++;
-					}
-				})
-				console.log("Ranking: " + ranking);
-				rhit.fbSongManager.add(data[this._randSong].key, data[this._randSong].artist, data[this._randSong].title, ranking, rating, this._randSong + 1);
-				(document.querySelector("#inputRanking")).value = "";
-				document.querySelector("#guessTitle").innerHTML = `${data[this._randSong].title} by ${data[this._randSong].artist}`
-				document.querySelector("#guessResult").innerHTML = `Your Guess: ${ranking}\nTrue Ranking: ${this._randSong}`
-				console.log(rhit.fbSongManager);
-				rhit.fbSingleUserManager.updateSongs(data[this._randSong].key);
+			var user = firebase.firestore().collection(rhit.FB_COLLECTION_USERS).doc(rhit.fbSingleUserManager.userId).get().then(snapshot=>{
+				// console.log(snapshot.data())
+				userSongs = snapshot.data().userSongs;
+			});
+			if(userSongs.includes(data[this._randSong].key)){
+				console.log("already in usersongs");
+				document.querySelector("#dataWarning").innerHTML = "Song aready in User's Data"
+			} else{
+				// const movie = document.querySelector("#inputRanking").value;
+				const ranking = (document.querySelector("#inputRanking")).value;
+				if (ranking < 0 || ranking > 100) {
+					document.querySelector("#rankingWarning").innerHTML = "Ranking not between 0 and 100!";
+				} else {
+					var rating = 0;
+					document.querySelector("#rankingWarning").innerHTML = "";
+					document.querySelectorAll(".star").forEach(star => {
+						if (star.classList.contains("selected")) {
+							star.classList.toggle("selected");
+							rating++;
+						}
+					})
+					console.log("Ranking: " + ranking);
+					rhit.fbSongManager.add(data[this._randSong].key, data[this._randSong].artist, data[this._randSong].title, ranking, rating, this._randSong + 1);
+					(document.querySelector("#inputRanking")).value = "";
+					document.querySelector("#guessTitle").innerHTML = `${data[this._randSong].title} by ${data[this._randSong].artist}`
+					document.querySelector("#guessResult").innerHTML = `Your Guess: ${ranking}<br>True Ranking: ${this._randSong}`
+					console.log(rhit.fbSongManager);
+					rhit.fbSingleUserManager.updateSongs(data[this._randSong].key);
+				}
 			}
 		});
-		var userSongs = [];
 		// console.log(rhit.fbSingleUserManager.userId);
 		document.querySelector("#newSong").addEventListener("click", (event) => {
 			var user = firebase.firestore().collection(rhit.FB_COLLECTION_USERS).doc(rhit.fbSingleUserManager.userId).get().then(snapshot=>{
@@ -151,13 +160,13 @@ rhit.HomePageController = class {
 				userSongs = snapshot.data().userSongs;
 			});
 			console.log(userSongs);
-			this._randSong = Math.floor(Math.random() * 11);
+			this._randSong = Math.floor(Math.random() * 100);
 			// console.log(userSongs);
 			// if(userSongs.includes(data[this._randSong].key)){
 			// 	console.log(data[this._randSong].title);
 			// }
 			while(userSongs.includes(data[this._randSong].key)){
-				this._randSong = Math.floor(Math.random() * 11);
+				this._randSong = Math.floor(Math.random() * 100);
 			}
 			this.updateView();
 		});
@@ -174,6 +183,7 @@ rhit.HomePageController = class {
 			console.log("window load!");
 		}
 		rhit.fbSongManager.beginListening(this.updateView.bind(this));
+		rhit.fbSingleUserManager.beginListening(this.updateView.bind(this));
 	}
 
 	updateView() {
@@ -341,7 +351,7 @@ rhit.FbSingleSongManager = class {
 			console.log("Document successfully updated!");
 		})
 		.catch(function (error) {
-			console.eroor("Error adding document: ", error);
+			console.error("Error adding document: ", error);
 		});
 	}
 	delete() {
@@ -442,22 +452,32 @@ rhit.DetailPageController = class {
 rhit.GlobalDetailPageController = class {
 	constructor(index) {
 		this._index = index;
-
+		var userSongs = [];
 		document.querySelector("#submitAddSong").addEventListener("click", (event) => {
-			const ranking = document.querySelector("#inputRanking").value;
-			if (ranking < 0 || ranking > 100) {
-				document.querySelector("#rankingWarning").innerHTML = "Ranking not between 0 and 100!";
-			} else {
-				var rating = 0;
-				document.querySelector("#rankingWarning").innerHTML = "";
-				document.querySelectorAll(".star").forEach(star => {
-					if (star.classList.contains("selected")) {
-						star.classList.toggle("selected");
-						console.log("star hit");
-						rating++;
-					}
-				})
-				rhit.fbSongManager.add(data[index].key, data[index].artist, data[index].title, ranking, rating, index + 1);
+			var user = firebase.firestore().collection(rhit.FB_COLLECTION_USERS).doc(rhit.fbSingleUserManager.userId).get().then(snapshot=>{
+				// console.log(snapshot.data())
+				userSongs = snapshot.data().userSongs;
+			});
+			if(userSongs.includes(data[this._index].key)){
+				console.log("already in usersongs");
+				document.querySelector("#dataWarning").innerHTML = "Song aready in User's Data"
+			}else{
+				const ranking = document.querySelector("#inputRanking").value;
+				if (ranking < 0 || ranking > 100) {
+					document.querySelector("#rankingWarning").innerHTML = "Ranking not between 0 and 100!";
+				} else {
+					var rating = 0;
+					document.querySelector("#rankingWarning").innerHTML = "";
+					document.querySelectorAll(".star").forEach(star => {
+						if (star.classList.contains("selected")) {
+							star.classList.toggle("selected");
+							console.log("star hit");
+							rating++;
+						}
+					})
+					rhit.fbSongManager.add(data[index].key, data[index].artist, data[index].title, ranking, rating, index + 1);
+					rhit.fbSingleUserManager.updateSongs(data[this._index].key);
+				}
 			}
 		});
 		document.querySelectorAll(".star").forEach(star => {
@@ -494,6 +514,9 @@ rhit.ProfilePageController = class {
 			this.email = user.email;
 			this.photoURL = user.photoURL;
 		}
+		document.querySelector("#signOutButton").addEventListener("click", (event) => {
+			rhit.fbAuthManager.signOut();
+		});
 		document.querySelector("#submitEditUser").addEventListener("click", (event)=>{
 			user.updateProfile({
 				displayName: document.querySelector("#inputName").value,
@@ -509,7 +532,6 @@ rhit.ProfilePageController = class {
 		$("#editUserDialog").on("show.bs.modal", (event) => {
 			//Pre animation
 			document.querySelector("#inputName").value = this.displayName;
-			document.querySelector("#inputImage").value = this.photoURL;
 		});
 		$("#editUserDialog").on("shown.bs.modal", (event) => {
 			//Post animation
@@ -521,21 +543,28 @@ rhit.ProfilePageController = class {
 		slider.oninput = function() {
 			console.log(slider.value*.01);
 			root.style.setProperty('--opacity', slider.value*.01);
+			localStorage.setItem('data-opacity', slider.value*.01);
+			rhit.fbSingleUserManager.updateOpacity(slider.value*.01);
 		}
 
 		document.querySelector("#darkModeButton").addEventListener("click", (event)=>{
 			console.log("darkmode button pressed");
 			let currentMode = window.getComputedStyle(document.documentElement).getPropertyValue('--background-mode');
 			if(currentMode == 'black'){
-				root.style.setProperty('--background-mode', "#DDDDDD");
+				root.style.setProperty('--background-mode', "#ababab");
 				root.style.setProperty('--text-mode', "black");
+				localStorage.setItem('data-theme', 'light');
+				rhit.fbSingleUserManager.updateDarkMode(false);
 			} else{
 				root.style.setProperty('--background-mode', "black");
 				root.style.setProperty('--text-mode', "white");
+				localStorage.setItem('data-theme', 'dark');
+				rhit.fbSingleUserManager.updateDarkMode(true);
 			}
 		});
 		
 		this.updateView();
+		rhit.fbSingleUserManager.beginListening(this.updateView.bind(this));
 	}
 
 	updateView() {
@@ -640,19 +669,29 @@ rhit.FbSingleUserManager = class {
 			console.log("Document successfully updated!");
 		})
 		.catch(function (error) {
-			console.eroor("Error adding document: ", error);
+			console.error("Error adding document: ", error);
 		});
 	}
-	updateSettings(isDarkMode, opacity) {
+	updateOpacity(opacity) {
 		this._ref.update({
-			[rhit.FB_KEY_ISDARKMODE]: isDarkMode,
 			[rhit.FB_KEY_OPACITY]: opacity
 		})
 		.then(() => {
 			console.log("Document successfully updated!");
 		})
 		.catch(function (error) {
-			console.eroor("Error adding document: ", error);
+			console.error("Error adding document: ", error);
+		});
+	}
+	updateDarkMode(isDarkMode) {
+		this._ref.update({
+			[rhit.FB_KEY_ISDARKMODE]: isDarkMode
+		})
+		.then(() => {
+			console.log("Document successfully updated!");
+		})
+		.catch(function (error) {
+			console.error("Error adding document: ", error);
 		});
 	}
 	deleteUser() {
@@ -666,7 +705,7 @@ rhit.FbSingleUserManager = class {
 			console.log("Document successfully updated!");
 		})
 		.catch(function (error) {
-			console.eroor("Error adding document: ", error);
+			console.error("Error adding document: ", error);
 		});
 	}
 	get userId(){
@@ -738,6 +777,7 @@ rhit.FbAuthManager = class {
 		firebase.auth().signOut().catch((error) => {
 			console.log("Sign out error");
 		});
+		localStorage.clear();
 
 	}
 	get isSignedIn() {
@@ -791,18 +831,22 @@ rhit.initializePage = function () {
 		console.log("You are on the song page.");
 		const uid = urlParams.get("id");
 		rhit.fbSingleSongManager = new rhit.FbSingleSongManager(uid);
+		rhit.fbSongManager = new rhit.FbSongsManager(uid);
 		new rhit.DetailPageController();
 	}
 
 	if (document.querySelector("#globalSongPage")) {
 		console.log("You are on the global song page.");
 		const uid = urlParams.get("id");
+		rhit.fbSingleUserManager = new rhit.FbSingleUserManager(rhit.fbAuthManager.uid);
 		rhit.fbSingleSongManager = new rhit.FbSongsManager;
+		rhit.fbSongManager = new rhit.FbSongsManager(uid);
 		new rhit.GlobalDetailPageController(uid);
 	}
 
 	if (document.querySelector("#profilePage")) {
 		console.log("You are on the profile page.");
+		rhit.fbSingleUserManager = new rhit.FbSingleUserManager(rhit.fbAuthManager.uid);
 		new rhit.ProfilePageController;
 
 	}
@@ -842,9 +886,15 @@ rhit.main = function () {
 	rhit.fbAuthManager = new rhit.FbAuthManager();
 	rhit.fbUserManager = new rhit.FbUsersManager();
 	rhit.fbAuthManager.beginListening(() => {
+		// rhit.loadSettings();
 		console.log("authchange callback fired.")
 		console.log("isSignedIn = ", rhit.fbAuthManager.isSignedIn);
-
+		// var user = firebase.firestore().collection(rhit.FB_COLLECTION_USERS).doc(rhit.fbAuthManager.uid).get().then(snapshot=>{
+		// 	if(!snapshot.exists){
+		// 	}
+		// });
+		// rhit.fbUserManager.add(rhit.fbAuthManager.uid);
+		// rhit.fbSingleUserManager = new rhit.FbSingleUserManager(rhit.fbAuthManager.uid);
 		//Check for redirects
 		rhit.checkForRedirects();
 		//Page initialization
@@ -852,5 +902,18 @@ rhit.main = function () {
 	});
 	rhit.startFirebaseUI();
 };
+
+window.onload = function(){
+	console.log("page loaded");
+	const root = document.documentElement;
+	root.style.setProperty('--opacity', localStorage.getItem('data-opacity'));
+    if(localStorage.getItem('data-theme') == 'light'){
+		root.style.setProperty('--background-mode', "#ababab");
+		root.style.setProperty('--text-mode', "black");
+    } else{
+        root.style.setProperty('--background-mode', "black");
+		root.style.setProperty('--text-mode', "white");
+    }
+}
 
 rhit.main();

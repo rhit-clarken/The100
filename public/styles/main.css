@@ -119,8 +119,9 @@ a:hover {
 }
 
 #homeBody{
-    background: black;
-    color: white;
+    background: var(--background-mode);
+    color: var(--text-mode);
+    background-image: url("https://www.transparenttextures.com/patterns/cubes.png");
 }
 
 #homePage{
@@ -173,8 +174,9 @@ a:hover {
     font-size: 1.5em;
 }
 
-#dataBody, #songBody, #profileBody{
-    background: black;
+#dataBody, #songBody, #profileBody, #globalSongBody{
+    background: var(--background-mode);
+    background-image: url("https://www.transparenttextures.com/patterns/cubes.png");
 }
 
 #card{
@@ -248,7 +250,15 @@ img{
     margin: 1rem;
 }
 
-/* .background-neon{
-    background:rgba(162, 0, 255, 0.5);
-    /* opacity: 1; */
-/* } */
+#rankingWarning, #dataWarning {
+    color: red;
+}
+
+#guessTitle, #guessResult {
+    font-size: 20px;
+    color: var(--neon-color);
+}
+
+#resultsTitle {
+    color: black;
+}
