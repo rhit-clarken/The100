@@ -1,12 +1,4 @@
 :root {
-    /* --vertical-space: 2rem;
-    --horizontal-space: 3rem;
-
-    --light-color:242, 242, 242;
-    --body-color: 27, 67, 50;
-    --heading-color: #141C26;
-    --contrast-color: #73534C;
-    --bg-color: #BFBFBF; */
     --opacity: 1;
     --neon-color: rgba(162, 0, 255, var(--opacity));
     --background-mode:black;
@@ -73,10 +65,6 @@ a:hover {
     margin: 0;
     display: block;
     text-align: center;
-    /* justify-content: center; */
-    /* position: absolute;
-    left: 50%;
-    top: 50%; */
 }
 
 #firebaseui-auth-container {
@@ -98,13 +86,6 @@ a:hover {
 #loginThe100 {
     color: black;
     font-size: 2.5vw;
-    /*Centering "The 100" text*/
-    /* margin: 0;
-    position: absolute;
-    top: 50%;
-    left: 50%; */
-    /* -ms-transform: translate(-50%, -50%);
-    transform: translate(-50%, -50%); */
 }
 .textIntroAnimation {
     /*animation*/
@@ -155,23 +136,20 @@ a:hover {
     color: yellow;
 }
 
-#search-label {
+#searchButton {
     color:white;
+    border: 2px solid var(--neon-color);
+    height: fit-content;
 }
 
 #dataSearchBoxContainer {
-    display: flex;
-    justify-content: flex-end;
+    display: grid;
+    grid-template-columns: auto .1fr;
 }
 
 #dataSearchBox #searchInput {
-    border: 2px solid #A200FF;
+    border: 2px solid var(--neon-color);
     color: white;
-}
-
-#dataSearchIcon {
-    color: #A200FF;
-    font-size: 1.5em;
 }
 
 #dataBody, #songBody, #profileBody, #globalSongBody{

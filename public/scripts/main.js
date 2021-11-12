@@ -209,8 +209,13 @@ rhit.DataPageController = class {
 		document.querySelector("#userData").addEventListener("click", (event)=>{
 			if(document.querySelector("#globalData").classList.contains("currentData")){
 				document.querySelector("#globalData").classList.toggle("currentData");
-				document.querySelector("#userData").classList.toggle("currentData");
+				// document.querySelector("#userData").classList.toggle("currentData");
 			}
+			if(document.querySelector("#myData").classList.contains("currentData")){
+				document.querySelector("#myData").classList.toggle("currentData");
+			}
+			document.querySelector("#userData").classList.toggle("currentData");
+			window.location.href = `/data.html`;
 			this.showUserData = true;
 			this.updateList();
 
@@ -218,11 +223,27 @@ rhit.DataPageController = class {
 		document.querySelector("#globalData").addEventListener("click", (event)=>{
 			if(document.querySelector("#userData").classList.contains("currentData")){
 				document.querySelector("#userData").classList.toggle("currentData");
-				document.querySelector("#globalData").classList.toggle("currentData");
+				// document.querySelector("#globalData").classList.toggle("currentData");
 			}
+			if(document.querySelector("#myData").classList.contains("currentData")){
+				document.querySelector("#myData").classList.toggle("currentData");
+			}
+			document.querySelector("#globalData").classList.toggle("currentData");
+			// window.location.href = `/data.html`;
 			this.showUserData = false;
 			this.updateList();
 
+		});
+		document.querySelector("#myData").addEventListener("click", (event) => {
+			if(document.querySelector("#userData").classList.contains("currentData")){
+				document.querySelector("#userData").classList.toggle("currentData");
+				// document.querySelector("#myData").classList.toggle("currentData");
+			}
+			if(document.querySelector("#globalData").classList.contains("currentData")){
+				document.querySelector("#globalData").classList.toggle("currentData");
+			}
+			document.querySelector("#myData").classList.toggle("currentData");
+			window.location.href = `/data.html?uid=${rhit.fbAuthManager.uid}`;
 		});
 		//JS for data search
 		// document.querySelector("#searchButton").addEventListener("click", () => {
@@ -286,6 +307,10 @@ rhit.DataPageController = class {
 				};
 				newList.appendChild(newCard);
 			}
+		}
+
+		if(window.location.href == `/data.html?uid=${rhit.fbAuthManager.uid}`){
+			document.querySelector("#myData").classList.toggle("currentData");
 		}
 
 		const oldList = document.querySelector("#songListContainer");
