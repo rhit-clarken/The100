@@ -95,9 +95,12 @@ rhit.FbSongsManager = class {
 	get length() {
 		return this._documentSnapshots.length;
 	}
+	get document() {
+		return this._documentSnapshots;
+	}
 	getSongAtIndex(index) {
 		const docSnapshot = this._documentSnapshots[index];
-		const pic = new rhit.Song(
+		const song = new rhit.Song(
 			docSnapshot.id,
 			docSnapshot.get(rhit.FB_KEY_YTKEY),
 			docSnapshot.get(rhit.FB_KEY_ARTIST),
@@ -106,7 +109,7 @@ rhit.FbSongsManager = class {
 			docSnapshot.get(rhit.FB_KEY_USER_RATING),
 			docSnapshot.get(rhit.FB_KEY_GLOBAL_RANKING)
 		);
-		return pic;
+		return song;
 	}
 }
 
@@ -137,10 +140,25 @@ rhit.HomePageController = class {
 				document.querySelector("#guessTitle").innerHTML = `${data[this._randSong].title} by ${data[this._randSong].artist}`
 				document.querySelector("#guessResult").innerHTML = `Your Guess: ${ranking}\nTrue Ranking: ${this._randSong}`
 				console.log(rhit.fbSongManager);
+				rhit.fbSingleUserManager.updateSongs(data[this._randSong].key);
 			}
 		});
+		var userSongs = [];
+		// console.log(rhit.fbSingleUserManager.userId);
 		document.querySelector("#newSong").addEventListener("click", (event) => {
+			var user = firebase.firestore().collection(rhit.FB_COLLECTION_USERS).doc(rhit.fbSingleUserManager.userId).get().then(snapshot=>{
+				// console.log(snapshot.data())
+				userSongs = snapshot.data().userSongs;
+			});
+			console.log(userSongs);
 			this._randSong = Math.floor(Math.random() * 11);
+			// console.log(userSongs);
+			// if(userSongs.includes(data[this._randSong].key)){
+			// 	console.log(data[this._randSong].title);
+			// }
+			while(userSongs.includes(data[this._randSong].key)){
+				this._randSong = Math.floor(Math.random() * 11);
+			}
 			this.updateView();
 		});
 		document.querySelectorAll(".star").forEach(star => {
@@ -151,6 +169,10 @@ rhit.HomePageController = class {
 		// document.querySelector("#star1").addEventListener("click", (event) => {
 		// 	document.querySelector("#star1").dataset.selected = 1;
 		// })
+		document.onload = function(){
+			document.querySelector("#newSong").click();
+			console.log("window load!");
+		}
 		rhit.fbSongManager.beginListening(this.updateView.bind(this));
 	}
 
@@ -193,28 +215,41 @@ rhit.DataPageController = class {
 
 		});
 		//JS for data search
-		document.querySelector("#searchButton").addEventListener("click", () => {
-			alert(document.querySelector("#searchInput").value);
-			//not yet finished
-			// if(!(document.querySelector("#searchInput").value == "")) {
-			// 	var /*input, */filter, ul, li, a, i, txtValue;
-			// 	//input = document.getElementById('myInput');
-			// 	filter = document.querySelector("#searchInput").value.toUpperCase();//input.value.toUpperCase();
-			// 	ul = document.getElementById("myUL");
-			// 	li = ul.getElementsByTagName('li');
+		// document.querySelector("#searchButton").addEventListener("click", () => {
+		// 	console.log(rhit.fbSongManager.document);
+		// 	// alert(document.querySelector("#searchInput").value);
+		// 	//not yet finished
+		// 	// if(!(document.querySelector("#searchInput").value == "")) {
+		// 	// 	var /*input, */filter, ul, li, a, i, txtValue;
+		// 	// 	//input = document.getElementById('myInput');
+		// 	// 	filter = document.querySelector("#searchInput").value.toUpperCase();//input.value.toUpperCase();
+		// 	// 	ul = document.getElementById("myUL");
+		// 	// 	li = ul.getElementsByTagName('li');
 
-			// 	// Loop through all list items, and hide those who don't match the search query
-			// 	for (i = 0; i < li.length; i++) {
-			// 		a = li[i].getElementsByTagName("a")[0];
-			// 		txtValue = a.textContent || a.innerText;
-			// 		if (txtValue.toUpperCase().indexOf(filter) > -1) {
-			// 			li[i].style.display = "";
-			// 		} else {
-			// 			li[i].style.display = "none";
-			// 		}
-			// 	}
-			// }
+		// 	// 	// Loop through all list items, and hide those who don't match the search query
+		// 	// 	for (i = 0; i < li.length; i++) {
+		// 	// 		a = li[i].getElementsByTagName("a")[0];
+		// 	// 		txtValue = a.textContent || a.innerText;
+		// 	// 		if (txtValue.toUpperCase().indexOf(filter) > -1) {
+		// 	// 			li[i].style.display = "";
+		// 	// 		} else {
+		// 	// 			li[i].style.display = "none";
+		// 	// 		}
+		// 	// 	}
+		// 	// }
+		// });
+		document.querySelector("#searchButton").addEventListener('click', (event)=>{
+			const searchString = document.querySelector("#searchInput").value.toLowerCase();
+			document.querySelectorAll(".card").forEach(card=>{
+				const cardtext = card.dataset.text.toLowerCase();
+				if(cardtext.includes(searchString)){
+					card.style.display = "block";
+				}else{
+					card.style.display = "none";
+				}
+			})
 		});
+
 		rhit.fbSongManager.beginListening(this.updateList.bind(this));
 
 	}
@@ -252,7 +287,7 @@ rhit.DataPageController = class {
 
 	_createCard(song) {
 		return htmlToElement(`
-			<div class="card" id="card">
+			<div class="card" id="card" data-text="${song.title} ${song.artist}">
         	<div class="card-body">
           	<h5 class="card-text">${song.title} by ${song.artist}</h5>
           	<h6 class="card-subtitle mb-2">Your Ranking: ${song.ranking}</h6>
@@ -265,7 +300,7 @@ rhit.DataPageController = class {
 
 	_createGlobalCard(song, ranking) {
 		return htmlToElement(`
-			<div class="card" id="card">
+			<div class="card" id="card" data-text="${song.title} ${song.artist}">
         	<div class="card-body">
           	<h5 class="card-text">${song.title} by ${song.artist}</h5>
 			<h6 class="card-subtitle mb-2">True Ranking: ${ranking}</h6>
@@ -554,23 +589,30 @@ rhit.FbUsersManager = class {
 	get length() {
 		return this._documentSnapshots.length;
 	}
-	// getSongAtIndex(index) {
-	// 	const docSnapshot = this._documentSnapshots[index];
-	// 	const pic = new rhit.Song(
-	// 		docSnapshot.id,
-	// 		docSnapshot.get(rhit.FB_KEY_YTKEY),
-	// 		docSnapshot.get(rhit.FB_KEY_ARTIST),
-	// 		docSnapshot.get(rhit.FB_KEY_TITLE),
-	// 		docSnapshot.get(rhit.FB_KEY_USER_RANKING),
-	// 		docSnapshot.get(rhit.FB_KEY_USER_RATING),
-	// 		docSnapshot.get(rhit.FB_KEY_GLOBAL_RANKING)
-	// 	);
-	// 	return pic;
-	// }
+	getUserById(userId) {
+		const docSnapshot = firebase.firestore().collection(rhit.FB_COLLECTION_USERS).doc(userId);
+		const user = new rhit.User(
+			docSnapshot.id,
+			docSnapshot.get(rhit.FB_KEY_USERSONGS),
+			docSnapshot.get(rhit.FB_KEY_OPACITY),
+			docSnapshot.get(rhit.FB_KEY_ISDARKMODE)
+		);
+		return user;
+	}
+}
+
+rhit.User = class {
+	constructor(id, usersongs, opacity, isDarkMode){
+		this.id = id;
+		this.userSongs = usersongs;
+		this.opacity = opacity;
+		this.isDarkMode = isDarkMode;
+	}
 }
 
 rhit.FbSingleUserManager = class {
 	constructor(userId) {
+		this._userId = userId;
 	  this._documentSnapshot = {};
 	  this._unsubscribe = null;
 	  this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_USERS).doc(userId);
@@ -627,15 +669,17 @@ rhit.FbSingleUserManager = class {
 			console.eroor("Error adding document: ", error);
 		});
 	}
-
+	get userId(){
+		return this._userId;
+	}
 	get userSongs() {
-		return this._documentSnapshot.get(rhit.FB_KEY_USERSONGS);
+		return firebase.firestore.collection(rhit.FB_COLLECTION_USERS).doc(this._userId).get(rhit.FB_KEY_USERSONGS);
 	}
 	get isDarkMode() {
-		return this._documentSnapshot.get(rhit.FB_KEY_ISDARKMODE);
+		return this._documentSnapshot.getValue(rhit.FB_KEY_ISDARKMODE);
 	}
 	get opacity() {
-		return this._documentSnapshot.get(rhit.FB_KEY_OPACITY);
+		return this._documentSnapshot.getValue(rhit.FB_KEY_OPACITY);
 	}
  }
 
@@ -722,12 +766,7 @@ rhit.initializePage = function () {
 	if (document.querySelector("#homePage")) {
 		console.log("You are on the home page.");
 		const uid = urlParams.get("uid");
-		// firebase.firestore().collection(rhit.FB_COLLECTION_USERS).doc(rhit.FbAuthManager.uid).get().then((data)=>{
-		// 	if(data.exists){
-		// 		console.log(data);
-		// 	}
-		// })
-		// rhit.fbUserManager.add();
+		rhit.fbSingleUserManager = new rhit.FbSingleUserManager(rhit.fbAuthManager.uid);
 		rhit.fbSongManager = new rhit.FbSongsManager(uid);
 		new rhit.HomePageController();
 		// new rhit.ListPageController();
@@ -751,14 +790,14 @@ rhit.initializePage = function () {
 	if (document.querySelector("#songPage")) {
 		console.log("You are on the song page.");
 		const uid = urlParams.get("id");
-		rhit.fbSongManager = new rhit.FbSingleSongManager(uid);
+		rhit.fbSingleSongManager = new rhit.FbSingleSongManager(uid);
 		new rhit.DetailPageController();
 	}
 
 	if (document.querySelector("#globalSongPage")) {
 		console.log("You are on the global song page.");
 		const uid = urlParams.get("id");
-		rhit.fbSongManager = new rhit.FbSongsManager;
+		rhit.fbSingleSongManager = new rhit.FbSongsManager;
 		new rhit.GlobalDetailPageController(uid);
 	}
 
@@ -815,376 +854,3 @@ rhit.main = function () {
 };
 
 rhit.main();
-
-
-// rhit.FB_COLLECTION_PICTURES = "Pictures";
-// rhit.FB_KEY_URL = "url";
-// rhit.FB_KEY_CAPTION = "caption";
-// rhit.FB_KEY_LAST_TOUCHED = "lastTouched";
-// rhit.FB_KEY_AUTHOR = "author";
-// rhit.fbPictureManager = null;
-// rhit.fbSinglePictureManager = null;
-// rhit.fbAuthManager = null;
-
-
-// //From: https://stackoverflow.com/questions/494143/creating-a-new-dom-element-from-an-html-string-using-built-in-dom-methods-or-pro/35385518#35385518
-// function htmlToElement(html) {
-//     var template = document.createElement('template');
-//     html = html.trim(); // Never return a text node of whitespace as the result
-//     template.innerHTML = html;
-//     return template.content.firstChild;
-// }
-
-// rhit.ListPageController = class {
-// 	constructor() {
-
-// 		document.querySelector("#menuShowAllPictures").addEventListener("click", (event) => {
-// 			window.location.href = "/bucket.html";
-// 		});
-// 		document.querySelector("#menuShowMyPictures").addEventListener("click", (event) => {
-// 			window.location.href = `/bucket.html?uid=${rhit.fbAuthManager.uid}`;
-// 		});
-// 		document.querySelector("#menuSignOut").addEventListener("click", (event) => {
-// 			rhit.fbAuthManager.signOut();
-// 		});
-
-// 		document.querySelector("#submitAddPhoto").addEventListener("click", (event) => {
-// 			const url = document.querySelector("#inputURL").value;
-// 			const caption = document.querySelector("#inputCaption").value;
-// 			rhit.fbPictureManager.add(url, caption);
-
-// 		});
-
-// 		$("#addPhotoDialog").on("show.bs.modal", (event) => {
-// 			//Pre animation
-// 			const url = document.querySelector("#inputURL").value = "";
-// 			const caption = document.querySelector("#inputCaption").value = "";
-// 		});
-// 		$("#addPhotoDialog").on("shown.bs.modal", (event) => {
-// 			//Post animation
-// 			const url = document.querySelector("#inputURL").focus();
-// 		});
-
-// 		//Start listening!
-// 		rhit.fbPictureManager.beginListening(this.updateList.bind(this));
-
-// 	}
-
-
-// 	updateList() {
-// 		const newList = htmlToElement('<div id="photoBucketColumns"></div>');
-// 		for(let i = 0; i<rhit.fbPictureManager.length; i++) {
-// 			const pic = rhit.fbPictureManager.getPictureAtIndex(i);
-// 			const newCard = this._createCard(pic);
-// 			newCard.onclick = (event) => {
-// 				window.location.href = `/photo.html?id=${pic.id}`;
-// 			};
-// 			newList.appendChild(newCard);
-// 		}
-
-// 		const oldList = document.querySelector("#photoBucketColumns");
-// 		oldList.removeAttribute("id");
-// 		oldList.hidden = true;
-
-// 		oldList.parentElement.appendChild(newList);
-// 	}
-
-// 	_createCard(pic) {
-// 		return htmlToElement(`
-// 		<div class="pin" id="${pic.id}">
-// 		<img src="${pic.url}" class="img-fluid" alt="${pic.caption}">
-// 		<p class="caption">${pic.caption}</p>
-// 		</div>
-// 		`);
-// 	}
-
-//    }
-
-//    rhit.Picture = class {
-// 	   constructor(id, url, caption) {
-// 		   this.id = id;
-// 		   this.url = url;
-// 		   this.caption = caption;
-// 	   }
-//    }
-
-//    rhit.FbPicturesManager = class {
-
-// 	constructor(uid) {
-// 		this._uid = uid;
-// 	  this._documentSnapshots = [];
-// 	  this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_PICTURES);
-// 	  this._unsubscribe = null;
-// 	}
-
-// 	add(url, caption) { 
-
-// 		this._ref.add({
-// 			[rhit.FB_KEY_URL]: url,
-// 			[rhit.FB_KEY_CAPTION]: caption,
-// 			[rhit.FB_KEY_AUTHOR]: rhit.fbAuthManager.uid,
-// 			[rhit.FB_KEY_LAST_TOUCHED]: firebase.firestore.Timestamp.now()
-// 		})
-// 		.then(function (docRef) {
-// 			console.log("Document written with ID: ", docRef.id);
-// 		})
-// 		.catch(function (error) {
-// 			console.log("Error adding document: ", error);
-// 		});
-
-// 	}
-
-// 	beginListening(changeListener) {
-// 		let query= this._ref.orderBy(rhit.FB_KEY_LAST_TOUCHED, "desc").limit(50);
-// 		if(this._uid){
-// 			query = query.where(rhit.FB_KEY_AUTHOR, "==", this._uid);
-// 		}
-// 		this._unsubscribe = query.onSnapshot((querySnapshot) => {
-// 			this._documentSnapshots = querySnapshot.docs;
-// 			changeListener();
-// 		})
-// 	}
-// 	stopListening() { 
-// 		this._unsubscribe();
-// 	   }
-// 	get length() { 
-// 		return this._documentSnapshots.length;
-// 	   }
-// 	getPictureAtIndex(index) {
-// 		const docSnapshot = this._documentSnapshots[index];
-// 		const pic = new rhit.Picture(
-// 			docSnapshot.id,
-// 			docSnapshot.get(rhit.FB_KEY_URL),
-// 			docSnapshot.get(rhit.FB_KEY_CAPTION)
-// 		);
-// 		return pic;
-// 	    }
-// }
-
-// rhit.DetailPageController = class {
-// 	constructor() {
-
-// 		document.querySelector("#menuSignOut").addEventListener("click", (event) => {
-// 			rhit.fbAuthManager.signOut();
-// 		});
-
-// 		document.querySelector("#submitEditCaption").addEventListener("click", (event) => {
-// 			const caption = document.querySelector("#inputCaption").value;
-// 			rhit.fbSinglePictureManager.update(caption);
-
-// 		});
-
-// 		$("#editPhotoCaption").on("show.bs.modal", (event) => {
-// 			//Pre animation
-// 			document.querySelector("#inputCaption").value = rhit.fbSinglePictureManager.caption;
-// 		});
-// 		$("#editPhotoCaption").on("shown.bs.modal", (event) => {
-// 			//Post animation
-// 			document.querySelector("#inputCaption").focus();
-// 		});
-
-// 		document.querySelector("#submitDeletePic").addEventListener("click", (event) => {
-// 			rhit.fbSinglePictureManager.delete().then(()=> {
-// 				console.log("Document successfully deleted!");
-// 				window.location.href = "/";
-// 			}).catch((error)=>{
-// 				console.error("Error removing document: ", error);
-// 			});
-
-// 		});
-
-// 		rhit.fbSinglePictureManager.beginListening(this.updateView.bind(this));
-// 	}
-// 	updateView() {
-// 		const cardURL = document.querySelector("#cardURL");
-// 		cardURL.setAttribute("src", rhit.fbSinglePictureManager.url);
-// 		cardURL.setAttribute("alt", rhit.fbSinglePictureManager.caption);
-// 		document.querySelector("#cardCaption").innerHTML = rhit.fbSinglePictureManager.caption;
-// 		if(rhit.fbSinglePictureManager.author == rhit.fbAuthManager.uid){
-// 			document.querySelector("#menuEdit").style.display="flex";
-// 			document.querySelector("#menuDelete").style.display="flex";
-// 		}
-// 	}
-// }
-
-// rhit.FbSinglePictureManager = class {
-// 	constructor(picId) {
-// 	  this._documentSnapshot = {};
-// 	  this._unsubscribe = null;
-// 	  this._ref = firebase.firestore().collection(rhit.FB_COLLECTION_PICTURES).doc(picId);
-// 	  console.log(`Listening to ${this._ref.path}`);
-// 	}
-// 	beginListening(changeListener) {
-// 		this._unsubscribe =this._ref.onSnapshot((doc) => {
-// 			if(doc.exists){
-// 				console.log("Document data:", doc.data());
-// 				this._documentSnapshot = doc;
-// 				changeListener();
-// 			} else {
-// 				console.log("No such document!");
-// 			}
-// 		});
-// 	}
-// 	stopListening() {
-// 	  this._unsubscribe();
-// 	}
-// 	update(caption) {
-// 		this._ref.update({
-// 			[rhit.FB_KEY_CAPTION]: caption,
-// 			[rhit.FB_KEY_LAST_TOUCHED]: firebase.firestore.Timestamp.now()
-// 		})
-// 		.then(() => {
-// 			console.log("Document successfully updated!");
-// 		})
-// 		.catch(function (error) {
-// 			console.eroor("Error adding document: ", error);
-// 		});
-// 	}
-// 	delete() {
-// 		return this._ref.delete();
-// 	}
-
-// 	get url() {
-// 		return this._documentSnapshot.get(rhit.FB_KEY_URL);
-// 	}
-// 	get caption() {
-// 		return this._documentSnapshot.get(rhit.FB_KEY_CAPTION);
-// 	}
-// 	get author() {
-// 		return this._documentSnapshot.get(rhit.FB_KEY_AUTHOR);
-// 	}
-//  }
-
-//  rhit.LoginPageController = class {
-// 	constructor() {
-
-// 		document.querySelector("#rosefireButton").onclick = (event) => {
-// 			rhit.fbAuthManager.signIn();
-// 		};
-// 	}
-// }
-
-// rhit.FbAuthManager = class {
-// 	constructor() {
-// 		this._user = null;
-// 		console.log("You have made theAuth Manager");
-// 	}
-// 	beginListening(changeListener) {
-// 		firebase.auth().onAuthStateChanged((user) => {
-// 			this._user = user;
-// 			changeListener();
-// 		});
-// 	}
-// 	signIn() {
-// 		console.log("TODO: Sign in usingrosefire");
-// 		Rosefire.signIn("79c7d9b9-d08e-49ff-b96d-12eb3d59ab18", (err, rfUser) => {
-// 			if (err) {
-// 				console.log("Rosefire error!", err);
-// 				return;
-// 			}
-// 			console.log("Rosefire success!", rfUser);
-
-// 			firebase.auth().signInWithCustomToken(rfUser.token).catch((error)=>{
-// 				const errorCode = error.code;
-// 				const errorMessage = error.message;
-// 				if(errorCode === 'auth/invalid-custom-token') {
-// 					alert('The token you provided is not valid.');
-// 				}else{
-// 					console.error("Custom auth error", errorCode, errorMessage);
-// 				}
-// 			});
-// 		});
-
-
-// 	}
-// 	signOut() {
-// 		firebase.auth().signOut().catch((error) => {
-// 			console.log("Sign out error");
-// 		});
-
-// 	}
-// 	get isSignedIn() {
-// 		// return this._user != null;
-// 		//casts truthy or falsy value into true or false
-// 		return !!this._user;
-// 	}
-// 	get uid() {
-// 		return this._user.uid;
-// 	}
-// }
-
-
-// rhit.checkForRedirects = function() {
-// 	if (document.querySelector("#logInPage") && rhit.fbAuthManager.isSignedIn) {
-// 		window.location.href = "/bucket.html"
-// 	}
-// 	if (!document.querySelector("#logInPage") && !rhit.fbAuthManager.isSignedIn) {
-// 		window.location.href = "/"
-// 	}
-// };
-
-// rhit.initializePage = function() {
-// 	const urlParams = new URLSearchParams(window.location.search);
-
-// 	if (document.querySelector("#listPage")) {
-// 		console.log("You are on the list page.");
-// 		const uid = urlParams.get("uid");
-// 		rhit.fbPictureManager = new rhit.FbPicturesManager(uid);
-// 		new rhit.ListPageController();
-
-// 	}
-
-// 	if (document.querySelector("#detailPage")) {
-// 		console.log("You are on the detail page.");
-// 		const picId = urlParams.get("id");
-// 		if (!picId) {
-// 			window.location.href = "/";
-// 		}
-
-// 		rhit.fbSinglePictureManager = new rhit.FbSinglePictureManager(picId);
-// 		new rhit.DetailPageController();
-
-// 	}
-
-// 	if (document.querySelector("#logInPage")) {
-// 		console.log("You are on the logIn page.");
-// 		new rhit.LoginPageController();
-
-// 	}
-// };
-
-
-// rhit.startFirebaseUI = function() {
-// 	var uiConfig = {
-// 		signInSuccessUrl: '/bucket.html',
-// 		signInOptions: [
-// 		  firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-// 		  firebase.auth.EmailAuthProvider.PROVIDER_ID,
-// 		  firebase.auth.PhoneAuthProvider.PROVIDER_ID,
-// 		  firebaseui.auth.AnonymousAuthProvider.PROVIDER_ID
-// 		],
-// 	  };
-
-// 	  const ui = new firebaseui.auth.AuthUI(firebase.auth());
-// 	  ui.start('#firebaseui-auth-container', uiConfig);
-// }
-
-// rhit.main = function () {
-// 	console.log("Ready");
-
-// 	rhit.fbAuthManager = new rhit.FbAuthManager();
-// 	rhit.fbAuthManager.beginListening(() => {
-// 		console.log("authchange callback fired.")
-// 		console.log("isSignedIn = ", rhit.fbAuthManager.isSignedIn);
-
-// 		//Check for redirects
-// 		rhit.checkForRedirects();
-// 		//Page initialization
-// 		rhit.initializePage();
-// 	});
-
-// 	rhit.startFirebaseUI();
-// };
-
-
-// rhit.main();
