@@ -194,7 +194,7 @@ rhit.DataPageController = class {
 
 		document.querySelector("#signOutButton").addEventListener("click", (event) => {
 			rhit.fbAuthManager.signOut();
-		});
+		}); 
 
 		document.querySelector("#userData").addEventListener("click", (event)=>{
 			if(document.querySelector("#globalData").classList.contains("currentData")){

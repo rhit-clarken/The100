@@ -165,6 +165,7 @@ a:hover {
 
 #dataSearchBox #searchInput {
     border: 2px solid #A200FF;
+    color: white;
 }
 
 #dataSearchIcon {
@@ -172,7 +173,7 @@ a:hover {
     font-size: 1.5em;
 }
 
-#dataBody, #songBody{
+#dataBody, #songBody, #profileBody{
     background: black;
 }
 
