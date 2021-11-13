@@ -538,26 +538,26 @@ rhit.ProfilePageController = class {
 		document.querySelector("#signOutButton").addEventListener("click", (event) => {
 			rhit.fbAuthManager.signOut();
 		});
-		document.querySelector("#submitEditUser").addEventListener("click", (event)=>{
-			user.updateProfile({
-				displayName: document.querySelector("#inputName").value,
-				photoURL: document.querySelector("#inputImage").value
-			  }).then(() => {
-				// Update successful
-				// ...
-			  }).catch((error) => {
-				// An error occurred
-				// ...
-			  }); 
-		});
-		$("#editUserDialog").on("show.bs.modal", (event) => {
-			//Pre animation
-			document.querySelector("#inputName").value = this.displayName;
-		});
-		$("#editUserDialog").on("shown.bs.modal", (event) => {
-			//Post animation
-			document.querySelector("#inputName").focus();
-		});
+		// document.querySelector("#submitEditUser").addEventListener("click", (event)=>{
+		// 	user.updateProfile({
+		// 		displayName: document.querySelector("#inputName").value,
+		// 		photoURL: document.querySelector("#inputImage").value
+		// 	  }).then(() => {
+		// 		// Update successful
+		// 		// ...
+		// 	  }).catch((error) => {
+		// 		// An error occurred
+		// 		// ...
+		// 	  }); 
+		// });
+		// $("#editUserDialog").on("show.bs.modal", (event) => {
+		// 	//Pre animation
+		// 	document.querySelector("#inputName").value = this.displayName;
+		// });
+		// $("#editUserDialog").on("shown.bs.modal", (event) => {
+		// 	//Post animation
+		// 	document.querySelector("#inputName").focus();
+		// });
 
 		const slider = document.getElementById("opacityRange");
 		const root = document.documentElement;
